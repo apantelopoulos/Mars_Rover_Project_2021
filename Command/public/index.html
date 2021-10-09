@@ -1,0 +1,239 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script language="javascript" type="text/javascript" src="info.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+    html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+
+    .vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+    </style>
+    <body class="w3-light-grey">
+
+      <div class="w3-main" style="margin-left:30px;margin-top:43px;margin-right:30px;">
+        <h1>Command</h1>
+            <form action="/add" method="POST">
+              <div class="form-group">
+                <label for="selection">Please select command type</label>
+                <select class="form-control" name="selection" id="selection">
+                      <option value="stop">Stop</option>
+                      <option value="reset">Reset</option>
+                      <option value="manual">Manual Drive</option>
+                      <option value="auto">Autonomous Drive</option>
+                </select>
+              </div>
+              <div id="manual_command" hidden>
+                    <label>Direction</label>
+              <select name="direction">
+                    <option value ="forward">Forward</option>
+                    <option value ="right">Right</option>
+                    <option value ="left">Left</option>
+                    <option value ="back">Back</option>
+                    </select> 
+              <label>for</label>
+              <input type="text" name="value" placeholder="mm/degrees">
+            </div>
+            
+            <div id="auto_command" hidden>
+              <label>Coordinates</label>
+              <input type="text" name="x" placeholder="X (in mm)">
+              <input type="text" name="y" placeholder="Y (in mm)">
+            </div>
+
+              <div class="center">
+                <input type="submit" name="submit" value="Submit" class="btn brand z-depth-0">
+              </div>
+            </form>
+          </div>
+
+    <div class="w3-main" style="margin-left:30px;margin-top:43px;margin-right:30px;">
+
+        <!-- Header -->
+        <header class="w3-container" style="padding-top:22px">
+          <h5><b><i class="fa fa-dashboard"></i> Dashboard</b></h5>
+        </header>
+      
+        <div class="w3-row-padding w3-margin-bottom">
+          <div class="w3-quarter">
+            <div class="w3-container w3-red w3-padding-16">
+              <div class="w3-left"><i class="fa fa-battery w3-xxxlarge"></i></div>
+              <div class="w3-right">
+                <h3><b id="batt"></b>%</h3>
+              </div>
+              <div class="w3-clear"></div>
+              <h4>Battery</h4>
+            </div>
+          </div>
+          <div class="w3-quarter">
+            <div class="w3-container w3-blue w3-padding-16">
+              <div class="w3-left"><i class="fa fa-location-arrow w3-xxxlarge"></i></div>
+              <div class="w3-right">
+                <h3>x=<b id="posx"></b> cm &nbsp; y=<b id="posy"></b> cm</h3>
+              </div>
+              <div class="w3-clear"></div>
+              <h4>Position</h4>
+            </div>
+          </div>
+          <div class="w3-quarter">
+            <div class="w3-container w3-teal w3-padding-16">
+              <div class="w3-left"><i id="change" class="fa fa-lock w3-xxxlarge"></i></div>
+              <div class="w3-right">
+                <h3><div id="status"></div></h3>
+              </div>
+              <div class="w3-clear"></div>
+              <h4>Status</h4>
+            </div>
+          </div>
+          <div class="w3-quarter">
+            <div class="w3-container w3-orange w3-text-white w3-padding-16">
+              <div class="w3-left"><i class="fa fa-arrow-circle-o-down w3-xxxlarge"></i></div>
+              <div class="w3-right">
+                <div class="w3-right">
+                  <h3>x=<b id="obsx"></b> cm &nbsp; y=<b id="obsy"></b> cm</h3>
+                </div>
+              </div>
+              <div class="w3-clear"></div>
+              <h4>Obstacle detected</h4>
+            </div>
+          </div>
+        </div>
+    </div>
+
+<div class="w3-main" align="center" style="font-size: 40px; color:red;" id="obstacle">
+</div>
+
+
+
+<br>
+  <br><br><br><br>
+  <div id="" style="margin-left:100px;margin-top:0px;margin-right:100px;"></div>
+  <div id="graph" align="center"></div>
+<script>
+
+$("#selection").change(function() {
+  if ($(this).val() == "auto") {
+    $('#auto_command').show();
+    $('#manual_command').hide();
+  } else if($(this).val() == "manual"){
+    $('#auto_command').hide();
+    $('#manual_command').show();
+  } else{
+    $('#auto_command').hide();
+    $('#manual_command').hide();
+  }
+});
+
+
+
+
+
+function plotting(){
+  var trace1 = {
+    x: x_pos,
+    y: y_pos,
+    type: 'scatter',
+    name: 'Rover Position',
+    mode: 'lines'
+  };
+
+  var trace2 = {
+    x: x_obs_g,
+    y: y_obs_g,
+    type: 'scatter',
+    name: 'Green Obstacles',
+    marker: {
+    // color: 'rgb(17, 157, 255)',
+    color: 'rgb(0, 255, 0)',
+    size: 20,
+    line: {
+      // color: 'rgb(231, 99, 250)',
+      color: 'rgb(0, 255, 0)',
+      width: 3
+    }
+  },
+    mode: 'markers'
+  };
+
+  var trace3 = {
+    x: x_obs_p,
+    y: y_obs_p,
+    type: 'scatter',
+    name: 'Purple Obstacles',
+    marker: {
+    // color: 'rgb(17, 157, 255)',
+    color: 'rgb(255, 0, 255)',
+    size: 20,
+    line: {
+      // color: 'rgb(231, 99, 250)',
+      color: 'rgb(255, 0, 255)',
+      width: 3
+    }
+  },
+    mode: 'markers'
+  };
+
+  var data = [trace1, trace2, trace3];
+  
+var x_axis = Math.floor(Math.max.apply(null, x_pos)/10);
+var y_axis = Math.floor(Math.max.apply(null, y_pos)/10);
+
+  // var x_axis = Math.max.apply(null, x_pos);
+  // var y_axis = Math.max.apply(null, y_pos);
+  
+var update = {
+width: window.innerWidth-250, // or any new width
+height: 800 // " "
+};
+
+  var layout = {
+    xaxis: {
+      autotick: false,
+      ticks: 'outside',
+      tick0: 0,
+      dtick: (x_axis+4),
+      ticklen: 8,
+      tickwidth: 4,
+      range: [-(x_axis*10)-50,(x_axis*10)+50],
+      //autorange: true,
+      tickcolor: '#000',
+      title: 'x (cm)'
+    },
+    yaxis: {
+      autotick: false,
+      ticks: 'outside',
+      tick0: 0,
+      dtick: (y_axis+4),
+      ticklen: 8,
+      tickwidth: 4,
+      // range: [-100,100],
+      range: [-(y_axis*10)-50,(y_axis*10)+50],
+      // autorange: true,
+      tickcolor: '#000',
+      title: 'y (cm)'
+    }
+  };
+  // console.log(data);
+  
+  Plotly.newPlot('graph', data, layout);
+  Plotly.relayout('graph', update);
+}
+
+setInterval(plotting, 1000);
+
+// console.log(x_pos);
+</script>
+
+</body>
+</html>

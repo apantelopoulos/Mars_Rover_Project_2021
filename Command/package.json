@@ -1,0 +1,26 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "first try for project server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "server"
+  ],
+  "author": "ap1919",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "http": "0.0.1-security",
+    "mongodb": "^3.6.9",
+    "mongoose": "^5.12.12",
+    "net": "^1.0.2",
+    "parse-json": "^5.2.0",
+    "plotly": "^1.0.6",
+    "socket.io": "^4.1.2"
+  }
+}
